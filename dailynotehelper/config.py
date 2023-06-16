@@ -48,6 +48,7 @@ class Config:
             "LITE_MODE",
             "COOKIE",
             "COOKIE_HOYOLAB",
+            "COOKIE_SR",
             "EXCLUDE_UID",
             "DISPLAY_UID",
             "NICK_NAME",
@@ -60,6 +61,7 @@ class Config:
             "HOMECOIN_INFO",
             "TRANSFORMER_INFO",
             "RESIN_THRESHOLD",
+            "STAMINA_THRESHOLD",
             "COMMISSION_NOTICE_TIME",
             "EXPEDITION_NOTICE",
             "WAIT_ALL_EXPEDITION",
@@ -117,6 +119,7 @@ class Config:
             eval_items = [
                 'COOKIE',
                 'COOKIE_HOYOLAB',
+                "COOKIE_SR",
                 'LITE_MODE',
                 'DISPLAY_UID',
                 'EXCLUDE_UID',

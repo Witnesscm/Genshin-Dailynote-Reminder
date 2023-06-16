@@ -49,7 +49,9 @@ class Yuanshen(Client):
             if retcode == 0:
                 data = response.data.get('data').get('data')
                 result, data = parse_info(data, role, mode='lite')
-                message = "\n".join(result) + f'\n\n️{ck_updated}'
+                message = "\n".join(result)
+                if ck_updated:
+                    message = message + f'\n\n️{ck_updated}'
             else:
                 message = f'Retcode: {retcode}\nMessage: {response.message}'
 
@@ -98,4 +100,23 @@ class Yuanshen(Client):
                 'data': None,
                 'message': message
             }
+
+
+class StarRail(Client):
+    def __init__(self, cookie: str = None):
+        super().__init__(cookie)
+        self.headers = get_headers(client_type='cn')
+        self.client_type = 'cn'
+        self.login_ticket: str = ''
+        self.cookie_widget = {
+            'stuid': self.cookie.get('ltuid') or self.cookie.get('account_id') or self.cookie.get('login_uid'),
+            'ltuid': self.cookie.get('ltuid') or self.cookie.get('account_id') or self.cookie.get('login_uid'),
+            'stoken': self.cookie.get('stoken'),
+            'ltoken': self.cookie.get('ltoken')
+        }
+        api_takumi = 'https://api-takumi.mihoyo.com'
+        api_takumi_record = 'https://api-takumi-record.mihoyo.com'
+        self.roles_api = api_takumi + '/binding/api/getUserGameRolesByCookie?game_biz=hkrpg_cn'
+        self.dailynote_api = api_takumi_record + '/game_record/app/hkrpg/api/note'
+        self.widget_api = api_takumi_record + '/game_record/app/hkrpg/aapi/widget'
 

@@ -3,6 +3,7 @@ from time import sleep
 from .utils import *
 from .utils import _
 from .check import start
+from .check import start_sr
 from .config import config
 from .__banner__ import banner
 
@@ -12,11 +13,13 @@ def run_once() -> None:
         log.info(_('😴休眠中……'))
         return
     os.environ['ACCOUNT_INDEX'] = '1'
-    os.environ['ACCOUNT_NUM'] = str(len(config.COOKIE + config.COOKIE_HOYOLAB))
+    os.environ['ACCOUNT_NUM'] = str(len(config.COOKIE + config.COOKIE_HOYOLAB + config.COOKIE_SR))
     if len(config.COOKIE):
         start(config.COOKIE, 'cn')
     if len(config.COOKIE_HOYOLAB):
         start(config.COOKIE_HOYOLAB, 'os')
+    if len(config.COOKIE_SR):
+        start_sr(config.COOKIE_SR, 'cn')
     log.info(_('本轮运行结束，等待下次检查...'))
 
 

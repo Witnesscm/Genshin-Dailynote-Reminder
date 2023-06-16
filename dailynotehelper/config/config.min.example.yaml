@@ -16,3 +16,8 @@ base:
   COOKIE_HOYOLAB:
     #- 'COOKIE1'
     #- 'COOKIE2'
+  # 星穹铁道 COOKIE
+  # Cookie of Star Rail (cn)
+  COOKIE_SR:
+    #- 'COOKIE1'
+    #- 'COOKIE2'

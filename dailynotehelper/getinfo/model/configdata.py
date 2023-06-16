@@ -6,9 +6,10 @@ from pydantic import BaseModel, StrictBool
 class ConfigData(BaseModel):
     LANGUAGE: Literal['zh_CN', 'en_US', 'zh_TW', 'ru_RU'] = 'zh_CN'
     RUN_ENV: Literal['local', 'cloud'] = 'local'
-    LITE_MODE: Literal['auto', True, False] = 'auto'
+    LITE_MODE: Literal['auto', True, False] = True
     COOKIE: List[str] = []
     COOKIE_HOYOLAB: List[str] = []
+    COOKIE_SR: List[str] = []
     EXCLUDE_UID: List[int] = []
     DISPLAY_UID: StrictBool = True
     NICK_NAME: Optional[str] = ''
@@ -23,12 +24,13 @@ class ConfigData(BaseModel):
     HOMECOIN_THRESHOLD: float = 0.95
     TRANSFORMER_INFO: StrictBool = True
 
-    RESIN_THRESHOLD: int = 140
+    RESIN_THRESHOLD: int = 150
+    STAMINA_THRESHOLD: int = 160
     COMMISSION_NOTICE_TIME: Optional[str] = '21:00'
-    EXPEDITION_NOTICE: StrictBool = True
+    EXPEDITION_NOTICE: StrictBool = False
     WAIT_ALL_EXPEDITION: StrictBool = False
-    HOMECOIN_NOTICE: StrictBool = True
-    TRANSFORMER: StrictBool = True
+    HOMECOIN_NOTICE: StrictBool = False
+    TRANSFORMER: StrictBool = False
 
     CHECK_INTERVAL: int = 30
     SLEEP_TIME: Optional[str] = '23:00-07:00'

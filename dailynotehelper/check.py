@@ -1,8 +1,11 @@
+import datetime
+import pydantic
 from .utils import *
 from .utils import _
 from .getinfo.parse_info import *
-from .getinfo.mihoyo import Yuanshen
+from .getinfo.mihoyo import Yuanshen, StarRail
 from .getinfo.hoyolab import Genshin
+from .getinfo.utils import request, get_headers
 from .notifiers import send2all
 
 
@@ -184,6 +187,137 @@ class Check:
                 )
 
 
+class CheckSR:
+    def __init__(self):
+        self.alert = False
+        self.status = ''
+        self.data = None
+        self.message = ''
+
+    class Response(pydantic.BaseModel):
+        current_stamina: int = 0
+        max_stamina: int = 0
+        stamina_recover_time: int = 0
+        current_train_score: int = 0
+        max_train_score: int = 0
+        current_rogue_score: int = 0
+        max_rogue_score: int = 0
+
+    def check_commision(self, current_train_score, max_train_score):
+        time_delta = reset_time_offset('cn_gf01')
+        time_config = datetime.datetime.strptime(
+            config.COMMISSION_NOTICE_TIME, '%H:%M'
+        ) + datetime.timedelta(hours=time_delta)
+        time_now = datetime.datetime.now() + datetime.timedelta(hours=time_delta)
+        if time_now.time() > time_config.time():
+            if current_train_score < max_train_score:
+                self.alert = True
+                self.status += _('你今日的实训还没有完成哦！')
+                log.info(_('🔔今日实训未完成，发送提醒。'))
+            else:
+                log.info(_('✅每日实训检查结束，今日实训已完成。'))
+        else:
+            log.info(_('⏩︎未到每日实训检查提醒时间。'))
+
+    def check_resin(self, current_resin):
+        if current_resin >= int(config.STAMINA_THRESHOLD):
+            self.alert = True
+            self.status += _('开拓力已经溢出啦！') if (current_resin >= 180) else _('开拓力快要溢出啦！')
+            log.info(_('🔔开拓力已到临界值，当前开拓力{}，发送提醒。').format(current_resin))
+        else:
+            log.info(_('✅开拓力检查结束，当前开拓力{}，未到提醒临界值。').format(current_resin))
+
+    def check(self, role, push=False):
+
+        if config.COMMISSION_NOTICE_TIME:
+            self.check_commision(self.data.current_train_score, self.data.max_train_score)
+        else:
+            log.info(_('⏩︎未开启每日实训检查，已跳过。'))
+
+        if config.STAMINA_THRESHOLD:
+            self.check_resin(self.data.current_stamina)
+        else:
+            log.info(_('⏩︎未开启开拓力检查，已跳过。'))
+
+        overflow = False
+        if config.SLEEP_TIME:
+            overflow = self.check_before_sleep(self.data.stamina_recover_time)
+
+        if config.NICK_NAME:
+            nickname = (
+                f'{config.NICK_NAME}，'
+                if 'zh' in config.LANGUAGE
+                else f'{config.NICK_NAME},'
+            )
+        else:
+            nickname = f"{role['nickname']}, "
+        # 推送消息
+        if self.alert or overflow or push:
+            send(text=nickname, status=self.status, message=self.message)
+
+    def check_before_sleep(self, recovery_seconds: int) -> bool:
+        time_nextcheck = (
+            datetime.datetime.now() + datetime.timedelta(minutes=config.CHECK_INTERVAL)
+        ).strftime('%H:%M')
+        if time_in_range(time_nextcheck, config.SLEEP_TIME):
+            overflow_time = (
+                datetime.datetime.now() + datetime.timedelta(seconds=recovery_seconds)
+            ).strftime('%H:%M')
+            if time_in_range(overflow_time, config.SLEEP_TIME):
+                self.status += _('开拓力将会在{}溢出，睡前记得清开拓力哦！').format(overflow_time)
+                log.info(_('🔔睡眠期间开拓力将会溢出，发送提醒。'))
+                return True
+            else:
+                log.info(_('✅睡眠期间开拓力不会溢出，放心休息。'))
+                return False
+
+    def get_resin_info(self, current_resin, max_resin, resin_recovery_time) -> str:
+        resin_data = (_('当前开拓力：{} / {}\n')).format(current_resin, max_resin)
+        if current_resin < 180:
+            if resin_recovery_time:
+                next_resin_rec_time = seconds2hours(
+                    6 * 60 - ((max_resin - current_resin) * 6 * 60 - resin_recovery_time)
+                )
+                resin_data += (_('下个回复倒计时：{}\n')).format(next_resin_rec_time)
+                overflow_time = datetime.datetime.now() + datetime.timedelta(
+                    seconds=resin_recovery_time
+                )
+            else:
+                overflow_time = datetime.datetime.now() + datetime.timedelta(
+                    seconds=(max_resin - current_resin) * 6 * 60
+                )
+            day = _('今天') if datetime.datetime.now().day == overflow_time.day else _('明天')
+            resin_data += _('预估回复时间：{} {}').format(day, overflow_time.strftime('%X'))
+        return resin_data
+
+    def lite_mode(self, client, role):
+        try:
+            r = request(
+                'get',
+                client.widget_api,
+                headers=get_headers(ds=True, client_type='cn_widget'),
+                cookies=client.cookie_widget
+            )
+            response = client.Response.parse_obj(r.json())
+        except Exception as e:
+            print(e)
+        else:
+            retcode = response.retcode
+            if retcode == 0:
+                self.data = self.Response.parse_obj(response.data)
+                hidden_uid = str(role['game_uid']).replace(str(role['game_uid'])[3:-3], '***', 1)
+                self.message = f"{role['nickname']} {role['region_name']}🌈\nUID：{hidden_uid}\n--------------------\n{self.get_resin_info(self.data.current_stamina, self.data.max_stamina, self.data.stamina_recover_time)}\n今日实训活跃：{self.data.current_train_score} / {self.data.max_train_score}"
+                self.check(role)
+            else:
+                if retcode == 10102:
+                    message = _('未开启实时便笺！')
+                elif retcode == 1034:
+                    message = _('账号异常！请登录米游社APP进行验证。')
+                else:
+                    message = f'Retcode: {retcode}\nMessage: {response.message}'
+                log.error(message)
+
+
 def start(cookies: list, server: str) -> None:
     for index, cookie in enumerate(cookies):
         log.info(
@@ -217,6 +351,38 @@ def start(cookies: list, server: str) -> None:
                         check.lite_mode(client, role)
                     else:
                         check.standard_mode(client, role, False)
+        else:
+            status = _('获取米游社角色信息失败！')
+            message = roles_info
+            send(text='❌ERROR! ', status=status, message=message)
+        log.info(f'-------------------------')
+
+
+def start_sr(cookies: list, server: str) -> None:
+    for index, cookie in enumerate(cookies):
+        log.info(
+            _('🗝️ 当前配置了{}个账号，正在执行第{}个').format(
+                os.environ['ACCOUNT_NUM'], os.environ['ACCOUNT_INDEX']
+            )
+        )
+        log.info('-------------------------')
+        os.environ['ACCOUNT_INDEX'] = str(int(os.environ['ACCOUNT_INDEX']) + 1)
+        client = StarRail(cookie)
+        roles_info = client.roles_info
+        if isinstance(roles_info, list):
+            log.info(
+                _('获取到{0}的{1}个角色...').format(
+                    (_('国服') if server == 'cn' else _('国际服')), len(roles_info)
+                )
+            )
+            for i, role in enumerate(roles_info):
+                log.info(
+                    (_('第{}个角色，{} {}')).format(
+                        i + 1, role['game_uid'], role['nickname']
+                    )
+                )
+                checksr = CheckSR()
+                checksr.lite_mode(client, role)
         else:
             status = _('获取米游社角色信息失败！')
             message = roles_info

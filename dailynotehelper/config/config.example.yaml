@@ -12,7 +12,7 @@ base:
   # 轻量模式，开启后将获取简洁版信息，以避免米游社风控验证码。仅对国服有效。
   # 可选项：auto: 自动模式，在遇到验证码后自动回落到轻量模式；true：强制开启；false：强制关闭。
   # Only valid for CN server.
-  LITE_MODE: auto
+  LITE_MODE: true
   # 账号信息，将下面的 COOKIEx 替换为你的 COOKIE。多账号换行填写，去掉 #，以 - 开头。
   # Account information, replace COOKIEx below with your COOKIE. Fill in a new line for multiple accounts, remove the #, and start with - .
   # 国服 COOKIE
@@ -23,6 +23,11 @@ base:
   # 国际服 COOKIE
   # Cookie of HOYOLAB (oversea)
   COOKIE_HOYOLAB:
+    #- 'COOKIE1'
+    #- 'COOKIE2'
+  # 星穹铁道 COOKIE
+  # Cookie of Star Rail (cn)
+  COOKIE_SR:
     #- 'COOKIE1'
     #- 'COOKIE2'
   # 排除 UID，在该列表中的 UID 不会进行检测
@@ -53,10 +58,10 @@ receive_info:
   COMMISSION_INFO: true
   # 探索派遣
   # Expeditions
-  EXPEDITION_INFO: true
+  EXPEDITION_INFO: false
   # 征讨领域（周本）树脂减半信息
   # Resin discount of trounce
-  TROUNCE_INFO: true
+  TROUNCE_INFO: false
   # 洞天宝钱
   # Home coin
   HOMECOIN_INFO: true
@@ -69,25 +74,28 @@ receive_info:
 receive_notice:
   # 原粹树脂提醒阈值，填 0 则关闭提醒
   # The original resin reminder threshold, fill in 0 to close the reminder
-  RESIN_THRESHOLD: 140
+  RESIN_THRESHOLD: 150
+  # 星穹铁道开拓力提醒阈值，填 0 则关闭提醒
+  # The stamina reminder threshold, fill in 0 to close the reminder
+  STAMINA_THRESHOLD: 160
   # 委托未完成的提醒时间，不填则关闭提醒
   # Reminder time when the commissions are not completed, if not filled, the reminder will be closed
-  COMMISSION_NOTICE_TIME: '21:00'
+  COMMISSION_NOTICE_TIME: '23:00'
   # 探索派遣完成提醒，true or false
   # Expeditions completion reminder, true or false
-  EXPEDITION_NOTICE: true
+  EXPEDITION_NOTICE: false
   # 是否等全部探索派遣都完成后才发送提醒，true or false
   # Whether to wait until all expeditions are completed before sending reminders，true or false
   WAIT_ALL_EXPEDITION: false
   # 洞天宝钱溢出提醒，true or false
   # Homecoin overflow reminder，true or false
-  HOMECOIN_NOTICE: true
+  HOMECOIN_NOTICE: false
   # 洞天宝钱提醒的阈值，为最大存储上限×该值，该值为 0 到 1 之间的数字
   # The threshold of Homecoin, which is the maximum storage upper limit × this value. A number between 0 and 1.
   HOMECOIN_THRESHOLD: 0.95
   # 参量质变仪就绪提醒
   # Parametric Transformer status reminder, true or false
-  TRANSFORMER: true
+  TRANSFORMER: false
 
 time:
   # 检查间隔（分钟），云函数运行时请确保与触发器设置一致，以便执行睡前检查
