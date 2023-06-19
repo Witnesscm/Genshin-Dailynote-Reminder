@@ -4,7 +4,7 @@ import json
 import datetime
 from ..utils import _
 from ..config import config
-from .model import BaseData
+from .model import BaseData, BaseData_SR
 
 
 def parse_info(info, role, mode='standard'):
@@ -78,6 +78,38 @@ def parse_info(info, role, mode='standard'):
             _('当前洞天宝钱/上限：{} / {}\n').format(info.current_home_coin, info.max_home_coin)
         )
         return result, info
+
+
+def parse_info_sr(info, role):
+    """
+    Configure the data you want to receive
+    """
+    result: list = []
+    server = {
+        'prod_gf_cn': _('星穹列车 🌈'),
+        'prod_qd_cn': _('无名客 🌲'),
+        'prod_official_usa': _('美服 🦙'),
+        'prod_official_euro': _('欧服 🏰'),
+        'prod_official_asia': _('亚服 🐯'),
+        'prod_official_cht': _('港澳台服 🧋'),
+    }
+    result.append(f"{role['nickname']} {server[role['region']]}")
+    if config.DISPLAY_UID:
+        hidden_uid = str(role['game_uid']).replace(
+            str(role['game_uid'])[3:-3], '***', 1
+        )
+        result.append(f'UID：{hidden_uid}')
+    result.append('--------------------')
+
+    if config.RESIN_INFO:
+        result.append(
+            get_stamina_info(
+                info.current_stamina, info.max_stamina, info.stamina_recover_time
+            )
+        )
+    # 每日实训活跃度
+    result.append(get_train_info(info))
+    return result
 
 
 def seconds2hours(seconds: int) -> str:
@@ -200,3 +232,29 @@ def get_transformer_info(info: BaseData) -> str:
             )
     else:
         return _('参量质变仪： 未获得')
+
+
+def get_stamina_info(current_stamina, max_stamina, stamina_recover_time) -> str:
+    resin_data = (_('当前开拓力：{} / {}\n')).format(current_stamina, max_stamina)
+    if current_stamina < 180:
+        if stamina_recover_time:
+            next_resin_rec_time = seconds2hours(
+                6 * 60 - ((max_stamina - current_stamina) * 6 * 60 - stamina_recover_time)
+            )
+            resin_data += (_('下个回复倒计时：{}\n')).format(next_resin_rec_time)
+            overflow_time = datetime.datetime.now() + datetime.timedelta(
+                seconds=stamina_recover_time
+            )
+        else:
+            overflow_time = datetime.datetime.now() + datetime.timedelta(
+                seconds=(max_stamina - current_stamina) * 6 * 60
+            )
+        day = _('今天') if datetime.datetime.now().day == overflow_time.day else _('明天')
+        resin_data += _('预估回复时间：{} {}').format(day, overflow_time.strftime('%X'))
+    return resin_data
+
+
+def get_train_info(info: BaseData_SR) -> str:
+    return _('每日实训活跃：{} / {}').format(
+        info.current_train_score, info.max_train_score
+    )

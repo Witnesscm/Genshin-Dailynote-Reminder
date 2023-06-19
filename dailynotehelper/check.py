@@ -1,11 +1,8 @@
-import datetime
-import pydantic
 from .utils import *
 from .utils import _
 from .getinfo.parse_info import *
 from .getinfo.mihoyo import Yuanshen, StarRail
 from .getinfo.hoyolab import Genshin
-from .getinfo.utils import request, get_headers
 from .notifiers import send2all
 
 
@@ -194,15 +191,6 @@ class CheckSR:
         self.data = None
         self.message = ''
 
-    class Response(pydantic.BaseModel):
-        current_stamina: int = 0
-        max_stamina: int = 0
-        stamina_recover_time: int = 0
-        current_train_score: int = 0
-        max_train_score: int = 0
-        current_rogue_score: int = 0
-        max_rogue_score: int = 0
-
     def check_commision(self, current_train_score, max_train_score):
         time_delta = reset_time_offset('cn_gf01')
         time_config = datetime.datetime.strptime(
@@ -271,51 +259,21 @@ class CheckSR:
                 log.info(_('✅睡眠期间开拓力不会溢出，放心休息。'))
                 return False
 
-    def get_resin_info(self, current_resin, max_resin, resin_recovery_time) -> str:
-        resin_data = (_('当前开拓力：{} / {}\n')).format(current_resin, max_resin)
-        if current_resin < 180:
-            if resin_recovery_time:
-                next_resin_rec_time = seconds2hours(
-                    6 * 60 - ((max_resin - current_resin) * 6 * 60 - resin_recovery_time)
-                )
-                resin_data += (_('下个回复倒计时：{}\n')).format(next_resin_rec_time)
-                overflow_time = datetime.datetime.now() + datetime.timedelta(
-                    seconds=resin_recovery_time
-                )
-            else:
-                overflow_time = datetime.datetime.now() + datetime.timedelta(
-                    seconds=(max_resin - current_resin) * 6 * 60
-                )
-            day = _('今天') if datetime.datetime.now().day == overflow_time.day else _('明天')
-            resin_data += _('预估回复时间：{} {}').format(day, overflow_time.strftime('%X'))
-        return resin_data
-
     def lite_mode(self, client, role):
-        try:
-            r = request(
-                'get',
-                client.widget_api,
-                headers=get_headers(ds=True, client_type='cn_widget'),
-                cookies=client.cookie_widget
-            )
-            response = client.Response.parse_obj(r.json())
-        except Exception as e:
-            print(e)
+        info = client.parse_widget_info(role)
+        # log.info(_('⚠️处于轻量模式。'))
+        if info['retcode'] == 0:
+            self.data = info['data']
+            self.message = info['message']
+            self.check(role, push=info['ck_updated'])
         else:
-            retcode = response.retcode
-            if retcode == 0:
-                self.data = self.Response.parse_obj(response.data)
-                hidden_uid = str(role['game_uid']).replace(str(role['game_uid'])[3:-3], '***', 1)
-                self.message = f"{role['nickname']} {role['region_name']}🌈\nUID：{hidden_uid}\n--------------------\n{self.get_resin_info(self.data.current_stamina, self.data.max_stamina, self.data.stamina_recover_time)}\n今日实训活跃：{self.data.current_train_score} / {self.data.max_train_score}"
-                self.check(role)
-            else:
-                if retcode == 10102:
-                    message = _('未开启实时便笺！')
-                elif retcode == 1034:
-                    message = _('账号异常！请登录米游社APP进行验证。')
-                else:
-                    message = f'Retcode: {retcode}\nMessage: {response.message}'
-                log.error(message)
+            log.error(info['message'])
+            send(
+                text='❌ERROR! ',
+                status=(_('获取UID: {} 数据失败！')).format(role['game_uid']),
+                message=info['message']
+            )
+
 
 
 def start(cookies: list, server: str) -> None:

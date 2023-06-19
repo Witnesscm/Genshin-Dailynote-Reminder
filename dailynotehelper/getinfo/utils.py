@@ -1,5 +1,6 @@
 import hashlib
 import random
+import string
 import time
 import requests
 import uuid
@@ -8,21 +9,39 @@ from ..utils import log
 from urllib.parse import urlencode
 
 
+def _hexdigest(text):
+    md5 = hashlib.md5()
+    md5.update(text.encode())
+    return md5.hexdigest()
+
+
 def get_ds(ds_type: str, params, body: dict) -> str:
-    t = str(int(time.time()))
-    r = str(random.randint(100000, 200000))
-    b = json.dumps(body) if body else ''
-    q = urlencode(params) if params else ''
-    salt = {
+    def ds1():
+        t = str(int(time.time()))
+        r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
+        c = _hexdigest(f'salt={salt}&t={t}&r={r}')
+        return f'{t},{r},{c}'
+
+    def ds2():
+        t = str(int(time.time()))
+        r = str(random.randint(100000, 200000))
+        b = json.dumps(body) if body else ''
+        q = urlencode(params) if params else ''
+        c = _hexdigest(f'salt={salt}&t={t}&r={r}&b={b}&q={q}')
+        return f'{t},{r},{c}'
+
+    salt_ds2 = {
         'cn': 'xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs',
         'os': 'okr4obncj8bw5a65hbnn5oo6ixjc3l9w',
         'cn_widget': 't0qEgfub6cvueAPgR5m9aQWWVciEer7v',
     }
-    text = f'salt={salt[ds_type]}&t={t}&r={r}&b={b}&q={q}'
-    md5 = hashlib.md5()
-    md5.update(text.encode())
-    c = md5.hexdigest()
-    return f'{t},{r},{c}'
+    if ds_type in salt_ds2:
+        salt = salt_ds2[ds_type]
+        ds = ds2()
+    if ds_type == 'cn_widget_v2':
+        salt = 'fdv0fY9My9eA7MR0NpjGP9RjueFvjUSQ'
+        ds = ds1()
+    return ds
 
 
 def get_headers(
@@ -49,6 +68,17 @@ def get_headers(
             "Referer": "https://webstatic-sea.hoyolab.com",
         },
         'cn_widget': {
+            "Accept": '*/*',
+            "x-rpc-sys_version": "16.1",
+            "x-rpc-channel": 'appstore',
+            "x-rpc-client_type": "2",
+            "Referer": 'https://app.mihoyo.com',
+            "x-rpc-device_name": 'iPhone',
+            "x-rpc-device_model": 'iPhone14,2',
+            "x-rpc-app_version": '2.40.1',
+            "User-Agent": 'WidgetExtension/264 CFNetwork/1399 Darwin/22.1.0'
+        },
+        'cn_widget_v2': {
             "Accept": '*/*',
             "x-rpc-sys_version": "16.1",
             "x-rpc-channel": 'appstore',

@@ -2,8 +2,7 @@ import schedule
 from time import sleep
 from .utils import *
 from .utils import _
-from .check import start
-from .check import start_sr
+from .check import start, start_sr
 from .config import config
 from .__banner__ import banner
 

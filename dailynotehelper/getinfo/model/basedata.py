@@ -38,3 +38,31 @@ class BaseData(pydantic.BaseModel):
     expeditions: List[dict] = []
     transformer: Union[None, dict]
     finished_expedition_num: Literal[0, 1, 2, 3, 4, 5] = 0
+    has_signed: bool = False
+
+
+class BaseData_SR(pydantic.BaseModel):
+    """
+    current_stamina=35 当前开拓力
+    max_stamina=180 开拓力上限
+    stamina_recover_time=59900 开拓力恢复时间
+    current_train_score=500 当前每日实训活跃度
+    max_train_score=500 最大每日实训活跃度
+    current_rogue_score=12000 当前每周模拟宇宙积分
+    max_rogue_score=12000 最大每周模拟宇宙积分
+    expeditions 委托执行详情
+    accepted_expedition_num=4 当前委托执行数量
+    total_expedition_num=4 最大委托执行数量
+    has_signed=True 米游社每日签到
+    """
+    current_stamina: int = 0
+    max_stamina: int = 0
+    stamina_recover_time: int = 0
+    current_train_score: int = 0
+    max_train_score: int = 0
+    current_rogue_score: int = 0
+    max_rogue_score: int = 0
+    expeditions: List[dict] = []
+    accepted_expedition_num: Literal[0, 1, 2, 3, 4] = 0
+    total_expedition_num: Literal[0, 1, 2, 3, 4] = 0
+    has_signed: bool = False
