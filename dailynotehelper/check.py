@@ -33,10 +33,10 @@ class Check:
         else:
             log.info(_('⏩︎未到每日委托检查提醒时间。'))
 
-    def check_resin(self, current_resin):
+    def check_resin(self, current_resin, max_resin):
         if current_resin >= int(config.RESIN_THRESHOLD):
             self.alert = True
-            self.status += _('树脂已经溢出啦！') if (current_resin >= 160) else _('树脂快要溢出啦！')
+            self.status += _('树脂已经溢出啦！') if (current_resin >= max_resin) else _('树脂快要溢出啦！')
             log.info(_('🔔树脂已到临界值，当前树脂{}，发送提醒。').format(current_resin))
         else:
             log.info(_('✅树脂检查结束，当前树脂{}，未到提醒临界值。').format(current_resin))
@@ -82,7 +82,7 @@ class Check:
             log.info(_('⏩︎未开启每日委托检查，已跳过。'))
 
         if config.RESIN_THRESHOLD:
-            self.check_resin(self.data.current_resin)
+            self.check_resin(self.data.current_resin, self.data.max_resin)
         else:
             log.info(_('⏩︎未开启树脂检查，已跳过。'))
 
@@ -207,13 +207,13 @@ class CheckSR:
         else:
             log.info(_('⏩︎未到每日实训检查提醒时间。'))
 
-    def check_resin(self, current_resin):
-        if current_resin >= int(config.STAMINA_THRESHOLD):
+    def check_resin(self, current_stamina, max_stamina):
+        if current_stamina >= int(config.STAMINA_THRESHOLD):    
             self.alert = True
-            self.status += _('开拓力已经溢出啦！') if (current_resin >= 180) else _('开拓力快要溢出啦！')
-            log.info(_('🔔开拓力已到临界值，当前开拓力{}，发送提醒。').format(current_resin))
+            self.status += _('开拓力已经溢出啦！') if (current_stamina >= max_stamina) else _('开拓力快要溢出啦！')
+            log.info(_('🔔开拓力已到临界值，当前开拓力{}，发送提醒。').format(current_stamina))
         else:
-            log.info(_('✅开拓力检查结束，当前开拓力{}，未到提醒临界值。').format(current_resin))
+            log.info(_('✅开拓力检查结束，当前开拓力{}，未到提醒临界值。').format(current_stamina))
 
     def check(self, role, push=False):
 
@@ -223,7 +223,7 @@ class CheckSR:
             log.info(_('⏩︎未开启每日实训检查，已跳过。'))
 
         if config.STAMINA_THRESHOLD:
-            self.check_resin(self.data.current_stamina)
+            self.check_resin(self.data.current_stamina, self.data.max_stamina)
         else:
             log.info(_('⏩︎未开启开拓力检查，已跳过。'))
 

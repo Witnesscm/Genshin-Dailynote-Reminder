@@ -120,7 +120,7 @@ def seconds2hours(seconds: int) -> str:
 
 def get_resin_info(current_resin, max_resin, resin_recovery_time) -> str:
     resin_data = (_('当前树脂：{} / {}\n')).format(current_resin, max_resin)
-    if current_resin < 160:
+    if current_resin < max_resin:
         if resin_recovery_time:
             next_resin_rec_time = seconds2hours(
                 8 * 60 - ((max_resin - current_resin) * 8 * 60 - resin_recovery_time)
@@ -236,7 +236,7 @@ def get_transformer_info(info: BaseData) -> str:
 
 def get_stamina_info(current_stamina, max_stamina, stamina_recover_time) -> str:
     resin_data = (_('当前开拓力：{} / {}\n')).format(current_stamina, max_stamina)
-    if current_stamina < 180:
+    if current_stamina < max_stamina:
         if stamina_recover_time:
             next_resin_rec_time = seconds2hours(
                 6 * 60 - ((max_stamina - current_stamina) * 6 * 60 - stamina_recover_time)

@@ -77,7 +77,7 @@ receive_notice:
   RESIN_THRESHOLD: 150
   # 星穹铁道开拓力提醒阈值，填 0 则关闭提醒
   # The stamina reminder threshold, fill in 0 to close the reminder
-  STAMINA_THRESHOLD: 160
+  STAMINA_THRESHOLD: 220
   # 委托未完成的提醒时间，不填则关闭提醒
   # Reminder time when the commissions are not completed, if not filled, the reminder will be closed
   COMMISSION_NOTICE_TIME: '23:00'
