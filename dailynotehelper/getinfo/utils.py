@@ -39,7 +39,8 @@ def get_ds(ds_type: str, params, body: dict) -> str:
         salt = salt_ds2[ds_type]
         ds = ds2()
     if ds_type == 'cn_widget_v2':
-        salt = 'fdv0fY9My9eA7MR0NpjGP9RjueFvjUSQ'
+        # k2 2.68.1
+        salt = 'NjqtetBQOv7BxuOmK0vxzBDQfDXwDoJR'
         ds = ds1()
     return ds
 
@@ -50,9 +51,11 @@ def get_headers(
     client = {
         'cn': {
             'Accept': 'application/json, text/plain, */*',
-            "x-rpc-app_version": "2.40.1",
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.40.1",
+            "x-rpc-app_version": "2.68.1",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.68.1",
             "x-rpc-client_type": "5",
+            "x-rpc-verify_key": "bll8iq97cem8",
+            "x-rpc-device_fp": "38d7f0aac0ab7",
             "x-rpc-page": "3.1.3_#/ys",
             "Origin": "https://webstatic.mihoyo.com",
             "X-Requested-With": "com.mihoyo.hyperion",
@@ -75,7 +78,9 @@ def get_headers(
             "Referer": 'https://app.mihoyo.com',
             "x-rpc-device_name": 'iPhone',
             "x-rpc-device_model": 'iPhone14,2',
-            "x-rpc-app_version": '2.40.1',
+            "x-rpc-app_version": '2.68.1',
+            "x-rpc-verify_key": "bll8iq97cem8",
+            "x-rpc-device_fp": "38d7f0aac0ab7",
             "User-Agent": 'WidgetExtension/264 CFNetwork/1399 Darwin/22.1.0'
         },
         'cn_widget_v2': {
@@ -86,7 +91,9 @@ def get_headers(
             "Referer": 'https://app.mihoyo.com',
             "x-rpc-device_name": 'iPhone',
             "x-rpc-device_model": 'iPhone14,2',
-            "x-rpc-app_version": '2.40.1',
+            "x-rpc-app_version": '2.68.1',
+            "x-rpc-verify_key": "bll8iq97cem8",
+            "x-rpc-device_fp": "38d7f0aac0ab7",
             "User-Agent": 'WidgetExtension/264 CFNetwork/1399 Darwin/22.1.0'
         }
     }
