@@ -144,44 +144,20 @@ class Check:
                 log.info(_('✅睡眠期间树脂不会溢出，放心休息。'))
                 return False
 
-    def lite_mode(self, client, role, fallback=False):
+    def lite_mode(self, client, role):
         info = client.parse_widget_info(role)
-        log.info(_('⚠️处于轻量模式，仅检查树脂、委托、洞天宝钱。'))
+        # log.info(_('⚠️处于轻量模式，仅检查树脂、委托、洞天宝钱。'))
         if info['retcode'] == 0:
             self.data = info['data']
-            self.message = (
-                info['message']
-                if not fallback
-                else info['message'] + '\n\n⚠️账号异常，本次自动回落至轻量模式'
-            )
-            self.check(role, lite=True, push=info['ck_updated'])
+            self.message = info['message']
+            self.check(role)
         else:
             log.error(info['message'])
             send(
                 text='❌ERROR! ',
                 status=(_('获取UID: {} 数据失败！')).format(role['game_uid']),
                 message=info['message']
-                if not fallback
-                else '⚠️账号异常，本次尝试自动回落至轻量模式失败！\n\n' + info['message'],
             )
-
-    def standard_mode(self, client, role, fallback):
-        info = client.parse_dailynote_info(role)
-        if info['retcode'] == 0:
-            self.data = info['data']
-            self.message = info['message']
-            self.check(role)
-        else:
-            if info['retcode'] == 1034 and fallback:
-                log.warning(_('⚠️UID: {} 账号异常，自动回落到轻量模式。').format(role['game_uid']))
-                self.lite_mode(client, role, fallback=True)
-            else:
-                log.error(info['message'])
-                send(
-                    text='❌ERROR! ',
-                    status=(_('获取UID: {} 数据失败！')).format(role['game_uid']),
-                    message=info['message'],
-                )
 
 
 class CheckSR:
@@ -265,7 +241,7 @@ class CheckSR:
         if info['retcode'] == 0:
             self.data = info['data']
             self.message = info['message']
-            self.check(role, push=info['ck_updated'])
+            self.check(role)
         else:
             log.error(info['message'])
             send(
@@ -303,12 +279,7 @@ def start(cookies: list, server: str) -> None:
                     log.info(_('跳过该角色'))
                 else:
                     check = Check()
-                    if config.LITE_MODE == 'auto':
-                        check.standard_mode(client, role, True)
-                    elif config.LITE_MODE and server == 'cn':
-                        check.lite_mode(client, role)
-                    else:
-                        check.standard_mode(client, role, False)
+                    check.lite_mode(client, role)
         else:
             status = _('获取米游社角色信息失败！')
             message = roles_info

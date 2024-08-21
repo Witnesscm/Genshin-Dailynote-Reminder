@@ -45,7 +45,6 @@ class Config:
         logging.info('Trying loading config from environment variables.')
         config_items = [
             "LANGUAGE",
-            "LITE_MODE",
             "COOKIE",
             "COOKIE_HOYOLAB",
             "COOKIE_SR",
@@ -120,7 +119,6 @@ class Config:
                 'COOKIE',
                 'COOKIE_HOYOLAB',
                 "COOKIE_SR",
-                'LITE_MODE',
                 'DISPLAY_UID',
                 'EXCLUDE_UID',
                 'CUSTOM_NOTIFIER',

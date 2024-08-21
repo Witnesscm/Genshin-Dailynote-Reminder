@@ -38,10 +38,6 @@ def get_ds(ds_type: str, params, body: dict) -> str:
     if ds_type in salt_ds2:
         salt = salt_ds2[ds_type]
         ds = ds2()
-    if ds_type == 'cn_widget_v2':
-        # k2 2.68.1
-        salt = 'NjqtetBQOv7BxuOmK0vxzBDQfDXwDoJR'
-        ds = ds1()
     return ds
 
 
@@ -51,8 +47,8 @@ def get_headers(
     client = {
         'cn': {
             'Accept': 'application/json, text/plain, */*',
-            "x-rpc-app_version": "2.68.1",
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.68.1",
+            "x-rpc-app_version": "2.74.2",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.74.2",
             "x-rpc-client_type": "5",
             "x-rpc-verify_key": "bll8iq97cem8",
             "x-rpc-device_fp": "38d7f0aac0ab7",
@@ -78,23 +74,10 @@ def get_headers(
             "Referer": 'https://app.mihoyo.com',
             "x-rpc-device_name": 'iPhone',
             "x-rpc-device_model": 'iPhone14,2',
-            "x-rpc-app_version": '2.68.1',
+            "x-rpc-app_version": '2.74.2',
             "x-rpc-verify_key": "bll8iq97cem8",
             "x-rpc-device_fp": "38d7f0aac0ab7",
-            "User-Agent": 'WidgetExtension/264 CFNetwork/1399 Darwin/22.1.0'
-        },
-        'cn_widget_v2': {
-            "Accept": '*/*',
-            "x-rpc-sys_version": "16.1",
-            "x-rpc-channel": 'appstore',
-            "x-rpc-client_type": "2",
-            "Referer": 'https://app.mihoyo.com',
-            "x-rpc-device_name": 'iPhone',
-            "x-rpc-device_model": 'iPhone14,2',
-            "x-rpc-app_version": '2.68.1',
-            "x-rpc-verify_key": "bll8iq97cem8",
-            "x-rpc-device_fp": "38d7f0aac0ab7",
-            "User-Agent": 'WidgetExtension/264 CFNetwork/1399 Darwin/22.1.0'
+            "User-Agent": 'okhttp/4.9.3'
         }
     }
     headers = client[client_type]
@@ -171,7 +154,7 @@ def request(*args, **kwargs):
 
 def cookie_to_dict(cookie: str) -> dict:
     if cookie and '=' in cookie:
-        lines = [line.strip().split('=') for line in cookie.split(';')]
+        lines = [line.strip().split('=', 1) for line in cookie.split(';')]
         cookie = {}
         for item in lines:
             if not item[0]:
